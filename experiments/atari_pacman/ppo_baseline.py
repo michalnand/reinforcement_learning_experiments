@@ -16,7 +16,7 @@ envs = RLAgents.MultiEnvSeq("MsPacmanNoFrameskip-v4", RLAgents.WrapperAtari, con
 
 agent = RLAgents.AgentPPO(envs, Model, Config) 
 
-max_iterations = 2*(10**6) 
+max_iterations = 1*(10**6) 
 
 #trainig = RLAgents.TrainingIterations(envs, agent, max_iterations, path, 1000)
 #trainig.run() 

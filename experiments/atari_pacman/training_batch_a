@@ -1,2 +1,0 @@
-python3 ppo_baseline.py
-python3 ppo_baseline_no_rewards.py

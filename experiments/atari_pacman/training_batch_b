@@ -1,2 +1,0 @@
-python3 ppo_entropy_no_rewards.py
-python3 ppo_curiosity_no_rewards.py
