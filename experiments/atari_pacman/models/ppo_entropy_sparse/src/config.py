@@ -1,6 +1,6 @@
 class Config(): 
     def __init__(self):
-        self.gamma_ext              = 0.995
+        self.gamma_ext              = 0.99
         self.gamma_int              = 0.99
 
         self.ext_adv_coeff          = 1.0

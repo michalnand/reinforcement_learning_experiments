@@ -4,14 +4,14 @@ import time
 
 import RLAgents
 
-import models.ppo_entropy_sparse_rewards.src.model_ppo             as ModelPPO
-import models.ppo_entropy_sparse_rewards.src.model_forward         as ModelForward
-import models.ppo_entropy_sparse_rewards.src.model_forward_target  as ModelForwardTarget
-import models.ppo_entropy_sparse_rewards.src.model_ae              as ModelAutoencoder
-import models.ppo_entropy_sparse_rewards.src.config                as Config
+import models.ppo_entropy_sparse.src.model_ppo             as ModelPPO
+import models.ppo_entropy_sparse.src.model_forward         as ModelForward
+import models.ppo_entropy_sparse.src.model_forward_target  as ModelForwardTarget
+import models.ppo_entropy_sparse.src.model_ae              as ModelAutoencoder
+import models.ppo_entropy_sparse.src.config                as Config
  
 
-path = "models/ppo_entropy_sparse_rewards/"
+path = "models/ppo_entropy_sparse/"
  
 config  = Config.Config()
  
