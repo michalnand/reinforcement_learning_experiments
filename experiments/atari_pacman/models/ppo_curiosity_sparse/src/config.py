@@ -1,10 +1,11 @@
 class Config(): 
     def __init__(self):
-        self.gamma_ext              = 0.99
-        self.gamma_int              = 0.99
+        self.gamma_ext              = 0.995
+        self.gamma_int              = 0.95
 
         self.ext_adv_coeff          = 1.0
-        self.int_adv_coeff          = 1.0
+        self.int_adv_coeff          = 0.1
+        self.normalize_internal_motivation = True
 
 
         self.entropy_beta           = 0.001
