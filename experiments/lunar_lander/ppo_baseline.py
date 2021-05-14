@@ -18,8 +18,7 @@ class ScoreWrapper(gym.Wrapper):
        
     def step(self, action):
         obs, reward, done, info = self.env.step(action)
-        reward = reward/10.0
-
+        reward = reward/100.0
         return obs, reward, done, info
 
     def reset(self):
@@ -31,7 +30,7 @@ def Wrapper(env):
     return env
 
 
-envs = RLAgents.MultiEnvSeq("LunarLanderContinuous-v2", Wrapper, config.actors)
+envs = RLAgents.MultiEnvSeq("LunarLanderContinuous-v2", ScoreWrapper, config.actors)
 
 agent = RLAgents.AgentPPOContinuous(envs, Model, Config)
 

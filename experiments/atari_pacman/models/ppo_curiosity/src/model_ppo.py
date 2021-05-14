@@ -1,6 +1,31 @@
 import torch
 import torch.nn as nn
 
+
+class ModelCritic(torch.nn.Module):
+    def __init__(self, inputs_count, hidden_count):
+        super(ModelCritic, self).__init__()
+
+        self.hidden     = torch.nn.Linear(inputs_count, hidden_count)
+        self.act        = torch.nn.ELU() 
+
+        self.ext_value  = torch.nn.Linear(hidden_count, 1)
+        self.int_value  = torch.nn.Linear(hidden_count, 1)
+
+        torch.nn.init.orthogonal_(self.hidden.weight, 0.01)
+        torch.nn.init.zeros_(self.hidden.bias)
+        
+        torch.nn.init.orthogonal_(self.ext_value.weight, 0.01)
+        torch.nn.init.zeros_(self.ext_value.bias)
+
+        torch.nn.init.orthogonal_(self.int_value.weight, 0.01)
+        torch.nn.init.zeros_(self.int_value.bias)
+
+    def forward(self, x):
+        y = self.act(self.hidden(x))
+
+        return self.ext_value(y), self.int_value(y)
+
 class Model(torch.nn.Module):
 
     def __init__(self, input_shape, outputs_count):
@@ -18,85 +43,58 @@ class Model(torch.nn.Module):
         fc_inputs_count = 128*(input_width//16)*(input_height//16)
   
         self.layers_features = [ 
-            nn.Conv2d(input_channels, 64, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
+            nn.Conv2d(input_channels, 64, kernel_size=8, stride=4, padding=2),
+            nn.ELU(),
 
             nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
+            nn.ELU(),
 
-            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=2, stride=2, padding=0),
-
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),
+            nn.ELU(),
+            
             nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=2, stride=2, padding=0),
-
+            nn.ELU(), 
+            
             nn.Flatten()
-        ] 
-
-        self.layers_ext_value = [
-            nn.Linear(fc_inputs_count, 512),
-            nn.ReLU(),                       
-            nn.Linear(512, 1)    
-        ]
-
-        self.layers_int_value = [
-            nn.Linear(fc_inputs_count, 512),
-            nn.ReLU(),                       
-            nn.Linear(512, 1)    
         ]  
 
         self.layers_policy = [
             nn.Linear(fc_inputs_count, 512),
-            nn.ReLU(),                      
+            nn.ELU(),                                          
             nn.Linear(512, outputs_count)
         ]
  
-  
         for i in range(len(self.layers_features)):
             if hasattr(self.layers_features[i], "weight"):
-                torch.nn.init.xavier_uniform_(self.layers_features[i].weight)
-
-        for i in range(len(self.layers_ext_value)):
-            if hasattr(self.layers_ext_value[i], "weight"):
-                torch.nn.init.xavier_uniform_(self.layers_ext_value[i].weight)
-
-        for i in range(len(self.layers_int_value)):
-            if hasattr(self.layers_int_value[i], "weight"):
-                torch.nn.init.xavier_uniform_(self.layers_int_value[i].weight)
+                torch.nn.init.orthogonal_(self.layers_features[i].weight, 2**0.5)
+                torch.nn.init.zeros_(self.layers_features[i].bias)
 
         for i in range(len(self.layers_policy)):
             if hasattr(self.layers_policy[i], "weight"):
-                torch.nn.init.xavier_uniform_(self.layers_policy[i].weight)
-
+                torch.nn.init.orthogonal_(self.layers_policy[i].weight, 0.01)
+                torch.nn.init.zeros_(self.layers_policy[i].bias)
 
         self.model_features = nn.Sequential(*self.layers_features)
         self.model_features.to(self.device)
 
-        self.model_ext_value = nn.Sequential(*self.layers_ext_value)
-        self.model_ext_value.to(self.device)
-
-        self.model_int_value = nn.Sequential(*self.layers_int_value)
-        self.model_int_value.to(self.device)
-
+        self.model_critic = ModelCritic(fc_inputs_count, 512)
+        self.model_critic.to(self.device)
+        
         self.model_policy = nn.Sequential(*self.layers_policy)
         self.model_policy.to(self.device)
 
         print("model_ppo")
         print(self.model_features)
-        print(self.model_ext_value)
-        print(self.model_int_value)
+        print(self.model_critic)
         print(self.model_policy)
         print("\n\n")
 
 
     def forward(self, state):
-        features        = self.model_features(state)
+        features                = self.model_features(state)
 
-        ext_value       = self.model_ext_value(features)
-        int_value       = self.model_int_value(features)
-        policy          = self.model_policy(features)
+        ext_value, int_value    = self.model_critic(features)
+        policy                  = self.model_policy(features)
 
         return policy, ext_value, int_value
 
@@ -104,38 +102,16 @@ class Model(torch.nn.Module):
         print("saving ", path)
 
         torch.save(self.model_features.state_dict(), path + "model_features.pt")
-        torch.save(self.model_ext_value.state_dict(), path + "model_ext_value.pt")
-        torch.save(self.model_int_value.state_dict(), path + "model_int_value.pt")
+        torch.save(self.model_critic.state_dict(), path + "model_critic.pt")
         torch.save(self.model_policy.state_dict(), path + "model_policy.pt")
 
     def load(self, path):
         print("loading ", path) 
 
         self.model_features.load_state_dict(torch.load(path + "model_features.pt", map_location = self.device))
-        self.model_ext_value.load_state_dict(torch.load(path + "model_ext_value.pt", map_location = self.device))
-        self.model_int_value.load_state_dict(torch.load(path + "model_int_value.pt", map_location = self.device))
+        self.model_critic.load_state_dict(torch.load(path + "model_critic.pt", map_location = self.device))
         self.model_policy.load_state_dict(torch.load(path + "model_policy.pt", map_location = self.device))
         
         self.model_features.eval() 
-        self.model_ext_value.eval()
-        self.model_int_value.eval() 
+        self.model_critic.eval()
         self.model_policy.eval() 
-
-
-    def get_activity_map(self, state):
- 
-        state_t     = torch.tensor(state, dtype=torch.float32).detach().to(self.device).unsqueeze(0)
-        features    = self.model_features(state_t)
-        features    = features.reshape((1, 128, 6, 6))
-
-        upsample = nn.Upsample(size=(self.input_shape[1], self.input_shape[2]), mode='bicubic')
-
-        features = upsample(features).sum(dim = 1)
-
-        result = features[0].to("cpu").detach().numpy()
-
-        k = 1.0/(result.max() - result.min())
-        q = 1.0 - k*result.max()
-        result = k*result + q
-        
-        return result
