@@ -13,7 +13,7 @@ augmentations 1 : [random_tiles, noise]
 augmentations 2 : [pixelate, random_tiles, noise]
 
 
-
+ 
 
 # input files and configs
 
