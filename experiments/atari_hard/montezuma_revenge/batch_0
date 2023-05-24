@@ -1,0 +1,31 @@
+
+python3 ppo_cndsa_26_0.py &
+sleep 100
+python3 ppo_cndsa_27_0.py &
+sleep 100
+python3 ppo_cndsa_28_0.py &
+sleep 100
+
+wait
+
+
+
+python3 ppo_cndsa_26_1.py &
+sleep 100
+python3 ppo_cndsa_27_1.py &
+sleep 100
+python3 ppo_cndsa_28_1.py &
+sleep 100
+
+wait
+
+ 
+
+python3 ppo_cndsa_26_2.py &
+sleep 100
+python3 ppo_cndsa_27_2.py &
+sleep 100
+python3 ppo_cndsa_28_2.py &
+sleep 100
+
+wait
