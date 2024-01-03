@@ -3,9 +3,6 @@ import RLAgents
 
 import src.model_ppo          as ModelPPO
 import src.config             as Config
-
-
-#torch.cuda.set_device("cuda:0")
   
 path = "./"
  

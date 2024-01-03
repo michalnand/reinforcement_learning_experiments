@@ -1,0 +1,23 @@
+sleep 220000
+
+python3 ppo_snd_ca_0.py &
+sleep 100
+python3 ppo_snd_ca_1.py &
+sleep 100
+python3 ppo_snd_ca_2.py &
+sleep 100
+
+wait 
+
+
+
+python3 ppo_0.py &
+sleep 100
+python3 ppo_1.py &
+sleep 100
+python3 ppo_2.py &
+sleep 100
+
+wait
+
+
