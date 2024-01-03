@@ -36,12 +36,26 @@ class Model(torch.nn.Module):
         self.model = nn.Sequential(*self.layers)
 
         self.model_aux = nn.Sequential(
-            nn.LayerNorm((512, )),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU(), 
-            nn.Linear(256, 3)
+            nn.Conv2d(1, 16, kernel_size=3, stride=2, padding=1),
+            nn.ELU(),
+
+            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),
+            nn.ELU(),
+
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
+            nn.ELU(),
+
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ELU(),
+          
+            nn.Flatten(),   
+
+            nn.Linear(64*fc_size, 512),
+            nn.ELU(),
+            nn.Linear(512, 512),
+            nn.ELU(),
+
+            nn.Linear(512, 512)
         )
 
         for i in range(1, len(self.model_aux)):
